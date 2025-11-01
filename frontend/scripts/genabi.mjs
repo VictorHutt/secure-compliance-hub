@@ -2,7 +2,7 @@ import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 
-const CONTRACT_NAME = "FHECounter";
+const CONTRACT_NAMES = ["FHECounter", "SecureCompliance"];
 
 // <root>/packages/fhevm-hardhat-template
 const rel = "..";
@@ -85,35 +85,44 @@ function readDeployment(chainName, chainId, contractName, optional) {
   return obj;
 }
 
-// Auto deployed on Linux/Mac (will fail on windows)
-const deployLocalhost = readDeployment("localhost", 31337, CONTRACT_NAME, false /* optional */);
+// Process each contract
+for (const CONTRACT_NAME of CONTRACT_NAMES) {
+  console.log(`\nProcessing ${CONTRACT_NAME}...`);
 
-// Sepolia is optional
-let deploySepolia = readDeployment("sepolia", 11155111, CONTRACT_NAME, true /* optional */);
-if (!deploySepolia) {
-  deploySepolia= { abi: deployLocalhost.abi, address: "0x0000000000000000000000000000000000000000" };
-}
-
-if (deployLocalhost && deploySepolia) {
-  if (
-    JSON.stringify(deployLocalhost.abi) !== JSON.stringify(deploySepolia.abi)
-  ) {
-    console.error(
-      `${line}Deployments on localhost and Sepolia differ. Cant use the same abi on both networks. Consider re-deploying the contracts on both networks.${line}`
-    );
-    process.exit(1);
+  // Auto deployed on Linux/Mac (will fail on windows)
+  let deployLocalhost;
+  try {
+    deployLocalhost = readDeployment("localhost", 31337, CONTRACT_NAME, false /* optional */);
+  } catch (e) {
+    console.warn(`Warning: Could not read localhost deployment for ${CONTRACT_NAME}`);
+    continue;
   }
-}
 
+  // Sepolia is optional
+  let deploySepolia = readDeployment("sepolia", 11155111, CONTRACT_NAME, true /* optional */);
+  if (!deploySepolia) {
+    deploySepolia = { abi: deployLocalhost.abi, address: "0x0000000000000000000000000000000000000000" };
+  }
 
-const tsCode = `
+  if (deployLocalhost && deploySepolia) {
+    if (
+      JSON.stringify(deployLocalhost.abi) !== JSON.stringify(deploySepolia.abi)
+    ) {
+      console.error(
+        `${line}Deployments on localhost and Sepolia differ for ${CONTRACT_NAME}. Cant use the same abi on both networks. Consider re-deploying the contracts on both networks.${line}`
+      );
+      process.exit(1);
+    }
+  }
+
+  const tsCode = `
 /*
   This file is auto-generated.
   Command: 'npm run genabi'
 */
 export const ${CONTRACT_NAME}ABI = ${JSON.stringify({ abi: deployLocalhost.abi }, null, 2)} as const;
 \n`;
-const tsAddresses = `
+  const tsAddresses = `
 /*
   This file is auto-generated.
   Command: 'npm run genabi'
@@ -124,13 +133,30 @@ export const ${CONTRACT_NAME}Addresses = {
 };
 `;
 
-console.log(`Generated ${path.join(outdir, `${CONTRACT_NAME}ABI.ts`)}`);
-console.log(`Generated ${path.join(outdir, `${CONTRACT_NAME}Addresses.ts`)}`);
-console.log(tsAddresses);
+  // Also generate a JSON file for dynamic loading
+  const jsonData = {
+    abi: deployLocalhost.abi,
+    address: deployLocalhost.address,
+    addresses: {
+      "11155111": deploySepolia.address,
+      "31337": deployLocalhost.address,
+    }
+  };
 
-fs.writeFileSync(path.join(outdir, `${CONTRACT_NAME}ABI.ts`), tsCode, "utf-8");
-fs.writeFileSync(
-  path.join(outdir, `${CONTRACT_NAME}Addresses.ts`),
-  tsAddresses,
-  "utf-8"
-);
+  console.log(`Generated ${path.join(outdir, `${CONTRACT_NAME}ABI.ts`)}`);
+  console.log(`Generated ${path.join(outdir, `${CONTRACT_NAME}Addresses.ts`)}`);
+  console.log(`Generated ${path.join(outdir, `${CONTRACT_NAME}.json`)}`);
+  console.log(tsAddresses);
+
+  fs.writeFileSync(path.join(outdir, `${CONTRACT_NAME}ABI.ts`), tsCode, "utf-8");
+  fs.writeFileSync(
+    path.join(outdir, `${CONTRACT_NAME}Addresses.ts`),
+    tsAddresses,
+    "utf-8"
+  );
+  fs.writeFileSync(
+    path.join(outdir, `${CONTRACT_NAME}.json`),
+    JSON.stringify(jsonData, null, 2),
+    "utf-8"
+  );
+}
