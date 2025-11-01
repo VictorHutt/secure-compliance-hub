@@ -1,0 +1,227 @@
+"use client";
+
+import { useState } from "react";
+import { useAccount } from "wagmi";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+import { Shield, FileText, AlertTriangle, Loader2 } from "lucide-react";
+import { useSecureCompliance } from "@/hooks/useSecureCompliance";
+
+export interface ComplianceRecord {
+  id: string;
+  inspectionId: string;
+  date: string;
+  inspector: string;
+  riskLevel: "low" | "medium" | "high" | "critical";
+  violationCode: number;
+  status: "pending" | "approved" | "flagged";
+  walletAddress: string;
+  onChainId?: number;
+}
+
+interface ComplianceFormProps {
+  onSubmit: (record: ComplianceRecord) => void;
+}
+
+export const ComplianceForm = ({ onSubmit }: ComplianceFormProps) => {
+  const { address, isConnected } = useAccount();
+  const { createRecord, isCreating, isDeployed } = useSecureCompliance();
+  const [formData, setFormData] = useState<{
+    inspectionId: string;
+    inspector: string;
+    riskLevel: "low" | "medium" | "high" | "critical";
+    violationCode: string;
+  }>({
+    inspectionId: "",
+    inspector: "",
+    riskLevel: "low",
+    violationCode: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!isConnected) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+
+    if (!formData.inspectionId || !formData.inspector) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (!isDeployed) {
+      toast.error("Contract not deployed on this network");
+      return;
+    }
+
+    try {
+      // Convert risk level to number (0-3)
+      const riskLevelMap: Record<string, number> = {
+        low: 0,
+        medium: 1,
+        high: 2,
+        critical: 3,
+      };
+      const riskLevelNum = riskLevelMap[formData.riskLevel];
+      const violationCodeNum = parseInt(formData.violationCode) || 0;
+
+      // Create record on-chain with encryption
+      const onChainId = await createRecord(riskLevelNum, violationCodeNum);
+
+      const record: ComplianceRecord = {
+        id: `CMP-${Date.now()}`,
+        date: new Date().toISOString(),
+        status: formData.riskLevel === "critical" || formData.riskLevel === "high" ? "flagged" : "pending",
+        walletAddress: address || "",
+        inspectionId: formData.inspectionId,
+        inspector: formData.inspector,
+        riskLevel: formData.riskLevel,
+        violationCode: violationCodeNum,
+        onChainId,
+      };
+
+      onSubmit(record);
+      
+      // Reset form
+      setFormData({
+        inspectionId: "",
+        inspector: "",
+        riskLevel: "low",
+        violationCode: "",
+      });
+
+      toast.success("Compliance record created and encrypted on-chain");
+    } catch (error) {
+      console.error("Failed to create record:", error);
+      toast.error("Failed to create encrypted record");
+    }
+  };
+
+  return (
+    <Card className="border-border/50 shadow-lg">
+      <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b">
+        <div className="flex items-center gap-2">
+          <FileText className="w-5 h-5 text-primary" />
+          <CardTitle>New Compliance Record</CardTitle>
+        </div>
+        <CardDescription>
+          All sensitive information will be encrypted and stored securely on-chain
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="pt-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="inspectionId">Inspection ID *</Label>
+              <Input
+                id="inspectionId"
+                placeholder="INS-2024-001"
+                value={formData.inspectionId}
+                onChange={(e) => setFormData({ ...formData, inspectionId: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="inspector">Inspector Name *</Label>
+              <Input
+                id="inspector"
+                placeholder="John Doe"
+                value={formData.inspector}
+                onChange={(e) => setFormData({ ...formData, inspector: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="riskLevel" className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              Risk Classification
+            </Label>
+            <Select
+              value={formData.riskLevel}
+              onValueChange={(value: "low" | "medium" | "high" | "critical") => 
+                setFormData({ ...formData, riskLevel: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-success" />
+                    Low Risk
+                  </span>
+                </SelectItem>
+                <SelectItem value="medium">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-warning" />
+                    Medium Risk
+                  </span>
+                </SelectItem>
+                <SelectItem value="high">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-destructive" />
+                    High Risk
+                  </span>
+                </SelectItem>
+                <SelectItem value="critical">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-encrypted" />
+                    Critical
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="violationCode" className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-encrypted" />
+              Violation Code (Encrypted)
+            </Label>
+            <Input
+              id="violationCode"
+              type="number"
+              placeholder="Enter violation code (e.g., 1001)"
+              value={formData.violationCode}
+              onChange={(e) => setFormData({ ...formData, violationCode: e.target.value })}
+            />
+            <p className="text-xs text-muted-foreground">
+              This value will be encrypted using FHE before storing on-chain
+            </p>
+          </div>
+
+          <Button 
+            type="submit" 
+            className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90"
+            disabled={!isConnected || isCreating || !isDeployed}
+          >
+            {isCreating ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Encrypting & Submitting...
+              </>
+            ) : isConnected ? (
+              <>
+                <Shield className="w-4 h-4 mr-2" />
+                Create Encrypted Record
+              </>
+            ) : (
+              "Connect Wallet to Continue"
+            )}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+};
