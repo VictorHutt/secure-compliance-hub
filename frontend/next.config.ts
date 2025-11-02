@@ -5,6 +5,14 @@ const nextConfig: NextConfig = {
   experimental: {
     // Turbopack is enabled via CLI flag
   },
+  webpack: (config) => {
+    // Fix MetaMask SDK warning about React Native async storage
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      '@react-native-async-storage/async-storage': false,
+    };
+    return config;
+  },
   headers() {
     // Required by FHEVM 
     return Promise.resolve([
