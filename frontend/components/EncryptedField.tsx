@@ -16,11 +16,11 @@ interface EncryptedFieldProps {
 
 export const EncryptedField = ({ 
   label, 
-  encryptedValue: _encryptedValue,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  encryptedValue,
   recordId,
   fieldType
 }: EncryptedFieldProps) => {
-  // Note: _encryptedValue is kept for API compatibility but decryption is done on-chain
   const [isRevealed, setIsRevealed] = useState(false);
   const [decryptedValue, setDecryptedValue] = useState<number | null>(null);
   const [isDecrypting, setIsDecrypting] = useState(false);
