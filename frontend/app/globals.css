@@ -2,6 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
-.zama-bg {
-  background-color: #ffd200;
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 215 25% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 15%;
+
+    --primary: 200 95% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 195 85% 88%;
+    --secondary-foreground: 215 25% 15%;
+
+    --muted: 210 20% 94%;
+    --muted-foreground: 215 15% 45%;
+
+    --accent: 185 80% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --success: 145 65% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 35 90% 55%;
+    --warning-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 20% 88%;
+    --input: 210 20% 90%;
+    --ring: 200 95% 35%;
+
+    --radius: 0.75rem;
+
+    --encrypted: 280 60% 50%;
+    --encrypted-foreground: 0 0% 100%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(200 95% 35%), hsl(185 80% 45%));
+    --gradient-secure: linear-gradient(135deg, hsl(200 95% 35%), hsl(280 60% 50%));
+    --shadow-glow: 0 0 30px hsla(200, 95%, 35%, 0.15);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    --background: 215 30% 8%;
+    --foreground: 210 20% 95%;
+
+    --card: 215 28% 12%;
+    --card-foreground: 210 20% 95%;
+
+    --popover: 215 28% 12%;
+    --popover-foreground: 210 20% 95%;
+
+    --primary: 200 90% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 215 25% 18%;
+    --secondary-foreground: 210 20% 95%;
+
+    --muted: 215 25% 18%;
+    --muted-foreground: 215 15% 65%;
+
+    --accent: 185 75% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --success: 145 60% 50%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 35 85% 60%;
+    --warning-foreground: 0 0% 100%;
+
+    --destructive: 0 80% 65%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 215 25% 20%;
+    --input: 215 25% 20%;
+    --ring: 200 90% 45%;
+
+    --encrypted: 280 55% 55%;
+    --encrypted-foreground: 0 0% 100%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
 }

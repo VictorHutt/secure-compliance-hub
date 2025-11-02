@@ -1,9 +1,4 @@
-
-/*
-  This file is auto-generated.
-  Command: 'npm run genabi'
-*/
-export const FHECounterABI = {
+{
   "abi": [
     {
       "inputs": [
@@ -67,6 +62,10 @@ export const FHECounterABI = {
       "stateMutability": "pure",
       "type": "function"
     }
-  ]
-} as const;
-
+  ],
+  "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "addresses": {
+    "31337": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "11155111": "0x0000000000000000000000000000000000000000"
+  }
+}
