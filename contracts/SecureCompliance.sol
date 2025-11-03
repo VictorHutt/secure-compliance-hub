@@ -38,7 +38,10 @@ contract SecureCompliance is SepoliaConfig {
     event RecordCreated(uint256 indexed recordId, address indexed submitter, uint256 timestamp);
 
     /// @notice Event emitted when a record is updated
-    event RecordUpdated(uint256 indexed recordId, address indexed updater);
+    event RecordUpdated(uint256 indexed recordId, address indexed updater, uint256 timestamp);
+    
+    /// @notice Event emitted when access is granted
+    event AccessGranted(uint256 indexed recordId, address indexed granter, address indexed grantee, uint256 timestamp);
 
     /// @notice Returns the total number of records
     function getRecordCount() external view returns (uint256) {
@@ -145,7 +148,7 @@ contract SecureCompliance is SepoliaConfig {
         FHE.allowThis(newStatus);
         FHE.allow(newStatus, msg.sender);
 
-        emit RecordUpdated(recordId, msg.sender);
+        emit RecordUpdated(recordId, msg.sender, block.timestamp);
     }
 
     /// @notice Grants decryption permission to a specific address for a record
@@ -158,5 +161,7 @@ contract SecureCompliance is SepoliaConfig {
         FHE.allow(_records[recordId].riskLevel, user);
         FHE.allow(_records[recordId].status, user);
         FHE.allow(_records[recordId].violationCode, user);
+        
+        emit AccessGranted(recordId, msg.sender, user, block.timestamp);
     }
 }
