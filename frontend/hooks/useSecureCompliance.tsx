@@ -62,6 +62,7 @@ export function useSecureCompliance(props?: UseSecureComplianceProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [isDecrypting, setIsDecrypting] = useState(false);
   const [message, setMessage] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
 
   const contractRef = useRef<ethers.Contract | null>(null);
 
@@ -108,11 +109,14 @@ export function useSecureCompliance(props?: UseSecureComplianceProps) {
   const createRecord = useCallback(
     async (riskLevel: number, violationCode: number): Promise<number> => {
       if (!fhevmInstance || !ethersSigner || !contractAddress || !chainId) {
-        throw new Error("Not ready to create record");
+        const errorMsg = "Not ready to create record. Please ensure wallet is connected and contract is deployed.";
+        setError(errorMsg);
+        throw new Error(errorMsg);
       }
 
       setIsCreating(true);
       setMessage("Encrypting data...");
+      setError(null);
 
       try {
         // Encrypt the risk level (euint8)
@@ -172,13 +176,18 @@ export function useSecureCompliance(props?: UseSecureComplianceProps) {
         }
 
         setMessage("Record created successfully!");
+        setError(null);
         return recordId;
       } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : "Unknown error occurred";
         console.error("Failed to create record:", error);
-        setMessage(`Error: ${(error as Error).message}`);
+        setMessage("");
+        setError(`Failed to create record: ${errorMsg}`);
         throw error;
       } finally {
         setIsCreating(false);
+        // Clear message after a delay
+        setTimeout(() => setMessage(""), 3000);
       }
     },
     [fhevmInstance, ethersSigner, contractAddress, chainId]
@@ -191,11 +200,14 @@ export function useSecureCompliance(props?: UseSecureComplianceProps) {
       fieldType: "riskLevel" | "status" | "violationCode"
     ): Promise<number> => {
       if (!fhevmInstance || !ethersSigner || !contractAddress || !contractRef.current) {
-        throw new Error("Not ready to decrypt");
+        const errorMsg = "Not ready to decrypt. Please ensure wallet is connected.";
+        setError(errorMsg);
+        throw new Error(errorMsg);
       }
 
       setIsDecrypting(true);
       setMessage("Fetching encrypted value...");
+      setError(null);
 
       try {
         let encryptedHandle: string;
@@ -240,13 +252,18 @@ export function useSecureCompliance(props?: UseSecureComplianceProps) {
         const clearValue = decryptedValues[encryptedHandle];
         
         setMessage("Decryption successful!");
+        setError(null);
         return Number(clearValue);
       } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : "Unknown decryption error";
         console.error("Failed to decrypt:", error);
-        setMessage(`Decryption error: ${(error as Error).message}`);
+        setMessage("");
+        setError(`Decryption failed: ${errorMsg}`);
         throw error;
       } finally {
         setIsDecrypting(false);
+        // Clear message after a delay
+        setTimeout(() => setMessage(""), 3000);
       }
     },
     [fhevmInstance, ethersSigner, contractAddress, fhevmDecryptionSignatureStorage]
@@ -284,6 +301,7 @@ export function useSecureCompliance(props?: UseSecureComplianceProps) {
     isCreating,
     isDecrypting,
     message,
+    error,
     createRecord,
     decryptField,
     getRecords,
