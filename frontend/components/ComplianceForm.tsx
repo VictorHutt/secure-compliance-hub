@@ -29,7 +29,7 @@ interface ComplianceFormProps {
 
 export const ComplianceForm = ({ onSubmit }: ComplianceFormProps) => {
   const { address, isConnected } = useAccount();
-  const { createRecord, isCreating, isDeployed } = useSecureCompliance();
+  const { createRecord, isCreating, isDeployed, error: hookError } = useSecureCompliance();
   const [formData, setFormData] = useState<{
     inspectionId: string;
     inspector: string;
@@ -41,6 +41,34 @@ export const ComplianceForm = ({ onSubmit }: ComplianceFormProps) => {
     riskLevel: "low",
     violationCode: "",
   });
+  const [validationErrors, setValidationErrors] = useState<{
+    inspectionId?: string;
+    inspector?: string;
+    violationCode?: string;
+  }>({});
+
+  const validateForm = (): boolean => {
+    const errors: typeof validationErrors = {};
+    
+    if (!formData.inspectionId.trim()) {
+      errors.inspectionId = "Inspection ID is required";
+    } else if (formData.inspectionId.length < 3) {
+      errors.inspectionId = "Inspection ID must be at least 3 characters";
+    }
+    
+    if (!formData.inspector.trim()) {
+      errors.inspector = "Inspector name is required";
+    } else if (formData.inspector.length < 2) {
+      errors.inspector = "Inspector name must be at least 2 characters";
+    }
+    
+    if (formData.violationCode && parseInt(formData.violationCode) < 0) {
+      errors.violationCode = "Violation code must be a positive number";
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,8 +78,8 @@ export const ComplianceForm = ({ onSubmit }: ComplianceFormProps) => {
       return;
     }
 
-    if (!formData.inspectionId || !formData.inspector) {
-      toast.error("Please fill in all required fields");
+    if (!validateForm()) {
+      toast.error("Please fix the validation errors");
       return;
     }
 
@@ -99,7 +127,16 @@ export const ComplianceForm = ({ onSubmit }: ComplianceFormProps) => {
       toast.success("Compliance record created and encrypted on-chain");
     } catch (error) {
       console.error("Failed to create record:", error);
-      toast.error("Failed to create encrypted record");
+      const errorMessage = error instanceof Error ? error.message : "Failed to create encrypted record";
+      toast.error(errorMessage);
+    }
+  };
+
+  // Clear validation error when field changes
+  const handleFieldChange = (field: keyof typeof formData, value: string) => {
+    setFormData({ ...formData, [field]: value });
+    if (validationErrors[field as keyof typeof validationErrors]) {
+      setValidationErrors({ ...validationErrors, [field]: undefined });
     }
   };
 
@@ -123,9 +160,13 @@ export const ComplianceForm = ({ onSubmit }: ComplianceFormProps) => {
                 id="inspectionId"
                 placeholder="INS-2024-001"
                 value={formData.inspectionId}
-                onChange={(e) => setFormData({ ...formData, inspectionId: e.target.value })}
+                onChange={(e) => handleFieldChange("inspectionId", e.target.value)}
                 required
+                className={validationErrors.inspectionId ? "border-destructive" : ""}
               />
+              {validationErrors.inspectionId && (
+                <p className="text-xs text-destructive">{validationErrors.inspectionId}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -134,9 +175,13 @@ export const ComplianceForm = ({ onSubmit }: ComplianceFormProps) => {
                 id="inspector"
                 placeholder="John Doe"
                 value={formData.inspector}
-                onChange={(e) => setFormData({ ...formData, inspector: e.target.value })}
+                onChange={(e) => handleFieldChange("inspector", e.target.value)}
                 required
+                className={validationErrors.inspector ? "border-destructive" : ""}
               />
+              {validationErrors.inspector && (
+                <p className="text-xs text-destructive">{validationErrors.inspector}</p>
+              )}
             </div>
           </div>
 
@@ -193,12 +238,23 @@ export const ComplianceForm = ({ onSubmit }: ComplianceFormProps) => {
               type="number"
               placeholder="Enter violation code (e.g., 1001)"
               value={formData.violationCode}
-              onChange={(e) => setFormData({ ...formData, violationCode: e.target.value })}
+              onChange={(e) => handleFieldChange("violationCode", e.target.value)}
+              className={validationErrors.violationCode ? "border-destructive" : ""}
+              min="0"
             />
+            {validationErrors.violationCode && (
+              <p className="text-xs text-destructive">{validationErrors.violationCode}</p>
+            )}
             <p className="text-xs text-muted-foreground">
               This value will be encrypted using FHE before storing on-chain
             </p>
           </div>
+          
+          {hookError && (
+            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+              <p className="text-sm text-destructive">{hookError}</p>
+            </div>
+          )}
 
           <Button 
             type="submit" 
