@@ -41,6 +41,10 @@ describe("SecureCompliance", function () {
   it("should have zero records after deployment", async function () {
     const recordCount = await secureComplianceContract.getRecordCount();
     expect(recordCount).to.eq(0);
+    
+    // Also verify getAllRecordIds returns empty array
+    const recordIds = await secureComplianceContract.getAllRecordIds();
+    expect(recordIds.length).to.eq(0);
   });
 
   it("should create a compliance record with encrypted data", async function () {
@@ -305,5 +309,81 @@ describe("SecureCompliance", function () {
         .connect(signers.bob)
         .updateStatus(0, encryptedNewStatus.handles[0], encryptedNewStatus.inputProof)
     ).to.be.revertedWith("Only submitter can update");
+  });
+
+  it("should allow granting access to another user", async function () {
+    // Create a record as alice
+    const encryptedRiskLevel = await fhevm
+      .createEncryptedInput(secureComplianceContractAddress, signers.alice.address)
+      .add8(1)
+      .encrypt();
+
+    const encryptedViolationCode = await fhevm
+      .createEncryptedInput(secureComplianceContractAddress, signers.alice.address)
+      .add32(5000)
+      .encrypt();
+
+    const tx = await secureComplianceContract
+      .connect(signers.alice)
+      .createRecord(
+        encryptedRiskLevel.handles[0],
+        encryptedRiskLevel.inputProof,
+        encryptedViolationCode.handles[0],
+        encryptedViolationCode.inputProof
+      );
+    await tx.wait();
+
+    // Grant access to bob
+    const grantTx = await secureComplianceContract
+      .connect(signers.alice)
+      .grantAccess(0, signers.bob.address);
+    const receipt = await grantTx.wait();
+
+    // Verify AccessGranted event was emitted
+    expect(receipt).to.not.be.null;
+  });
+
+  it("should not allow non-submitter to grant access", async function () {
+    // Create a record as alice
+    const encryptedRiskLevel = await fhevm
+      .createEncryptedInput(secureComplianceContractAddress, signers.alice.address)
+      .add8(0)
+      .encrypt();
+
+    const encryptedViolationCode = await fhevm
+      .createEncryptedInput(secureComplianceContractAddress, signers.alice.address)
+      .add32(0)
+      .encrypt();
+
+    const tx = await secureComplianceContract
+      .connect(signers.alice)
+      .createRecord(
+        encryptedRiskLevel.handles[0],
+        encryptedRiskLevel.inputProof,
+        encryptedViolationCode.handles[0],
+        encryptedViolationCode.inputProof
+      );
+    await tx.wait();
+
+    // Try to grant access as bob (should fail)
+    await expect(
+      secureComplianceContract
+        .connect(signers.bob)
+        .grantAccess(0, signers.deployer.address)
+    ).to.be.revertedWith("Only submitter can grant access");
+  });
+
+  it("should revert when accessing non-existent record", async function () {
+    await expect(
+      secureComplianceContract.getEncryptedRiskLevel(999)
+    ).to.be.revertedWith("Record does not exist");
+
+    await expect(
+      secureComplianceContract.getEncryptedStatus(999)
+    ).to.be.revertedWith("Record does not exist");
+
+    await expect(
+      secureComplianceContract.getEncryptedViolationCode(999)
+    ).to.be.revertedWith("Record does not exist");
   });
 });
