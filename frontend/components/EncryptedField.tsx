@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Lock, Unlock, Loader2 } from "lucide-react";
+import { Lock, Unlock, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAccount } from "wagmi";
 import { toast } from "sonner";
@@ -66,32 +66,37 @@ export const EncryptedField = ({
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 p-4 rounded-xl bg-encrypted/5 border border-encrypted/20">
       <div className="flex items-center justify-between">
         <label className="text-sm font-medium text-foreground flex items-center gap-2">
+          <div className="w-6 h-6 rounded-lg bg-encrypted/10 flex items-center justify-center">
+            <Lock className="w-3.5 h-3.5 text-encrypted" />
+          </div>
           {label}
-          <Lock className="w-3 h-3 text-encrypted" />
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-encrypted/10 text-encrypted font-medium">
+            FHE Encrypted
+          </span>
         </label>
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={() => isRevealed ? setIsRevealed(false) : handleDecrypt()}
           disabled={isDecrypting}
-          className="h-7 text-xs"
+          className="h-8 text-xs rounded-lg border-encrypted/30 hover:bg-encrypted/10 hover:border-encrypted/50 text-encrypted"
         >
           {isDecrypting ? (
             <>
-              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
               Decrypting...
             </>
           ) : isRevealed ? (
             <>
-              <Lock className="w-3 h-3 mr-1" />
+              <Lock className="w-3.5 h-3.5 mr-1.5" />
               Hide
             </>
           ) : (
             <>
-              <Unlock className="w-3 h-3 mr-1" />
+              <Unlock className="w-3.5 h-3.5 mr-1.5" />
               Decrypt
             </>
           )}
@@ -99,23 +104,40 @@ export const EncryptedField = ({
       </div>
       
       <div className={`
-        relative p-3 rounded-lg border transition-all
+        relative p-4 rounded-xl border-2 transition-all duration-300
         ${!isRevealed 
-          ? 'bg-encrypted/5 border-encrypted/30 backdrop-blur-sm' 
-          : 'bg-card border-border'
+          ? 'bg-gradient-to-r from-encrypted/5 to-encrypted/10 border-encrypted/20 border-dashed' 
+          : 'bg-card border-primary/30 shadow-soft'
         }
       `}>
         {!isRevealed ? (
-          <div className="flex items-center gap-2 text-encrypted/70">
-            <Lock className="w-4 h-4" />
-            <span className="text-sm font-mono">
-              ████████████████████████
-            </span>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-encrypted/10 flex items-center justify-center animate-pulse-soft">
+              <Lock className="w-4 h-4 text-encrypted" />
+            </div>
+            <div className="flex-1">
+              <span className="text-sm font-mono text-encrypted/50 tracking-wider">
+                ●●●●●●●●●●●●●●●●●●●●
+              </span>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Click decrypt to reveal value
+              </p>
+            </div>
           </div>
         ) : (
-          <p className="text-sm text-foreground break-words">
-            {formatValue(decryptedValue)}
-          </p>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <ShieldCheck className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-lg font-semibold text-foreground">
+                {formatValue(decryptedValue)}
+              </p>
+              <p className="text-[10px] text-muted-foreground">
+                Decrypted value
+              </p>
+            </div>
+          </div>
         )}
       </div>
     </div>

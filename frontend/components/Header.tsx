@@ -1,10 +1,9 @@
 "use client";
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Logo } from "./Logo";
 import { useSecureCompliance } from "@/hooks/useSecureCompliance";
 import { Badge } from "@/components/ui/badge";
-import { Shield, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Shield, AlertCircle, CheckCircle2, Lock } from "lucide-react";
 
 export const Header = () => {
   const { isDeployed, contractAddress, fhevmStatus } = useSecureCompliance();
@@ -12,7 +11,7 @@ export const Header = () => {
   const getStatusBadge = () => {
     if (isDeployed === undefined) {
       return (
-        <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-muted">
+        <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-muted animate-pulse">
           <AlertCircle className="w-3 h-3 mr-1" />
           Checking...
         </Badge>
@@ -29,7 +28,7 @@ export const Header = () => {
     }
 
     return (
-      <Badge variant="outline" className="bg-success/10 text-success border-success/20">
+      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
         <CheckCircle2 className="w-3 h-3 mr-1" />
         Contract Ready
       </Badge>
@@ -37,40 +36,46 @@ export const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full glass-effect border-b border-border/30 shadow-soft">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-3">
-          <Logo />
+        <div className="flex items-center gap-4">
+          {/* Logo with gradient background */}
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-soft">
+            <Shield className="w-5 h-5 text-white" />
+          </div>
+          
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-foreground">
-                Encrypted Customs Compliance
+              <h1 className="text-lg font-bold text-foreground">
+                Secure Compliance
               </h1>
               {getStatusBadge()}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Compliance Made Transparent—and Secure.
-            </p>
-            {contractAddress && (
-              <p className="text-[10px] text-muted-foreground/70 font-mono mt-0.5">
-                <Shield className="w-2.5 h-2.5 inline mr-1" />
-                {contractAddress.slice(0, 6)}...{contractAddress.slice(-4)}
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-muted-foreground">
+                FHE-Encrypted Records
               </p>
-            )}
+              {contractAddress && (
+                <span className="text-[10px] text-muted-foreground/60 font-mono flex items-center gap-1">
+                  <Lock className="w-2.5 h-2.5" />
+                  {contractAddress.slice(0, 6)}...{contractAddress.slice(-4)}
+                </span>
+              )}
+            </div>
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {fhevmStatus && (
-            <div className="hidden md:block text-xs text-muted-foreground">
-              <span className="font-medium">FHE:</span>{" "}
-              <span className={fhevmStatus === "ready" ? "text-success" : "text-warning"}>
-                {fhevmStatus}
+            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border/50 shadow-soft">
+              <div className={`w-2 h-2 rounded-full ${fhevmStatus === "ready" ? "bg-primary animate-pulse" : "bg-warning"}`} />
+              <span className="text-xs text-muted-foreground">
+                FHE {fhevmStatus === "ready" ? "Active" : fhevmStatus}
               </span>
             </div>
           )}
           <ConnectButton 
-            chainStatus="full"
+            chainStatus="icon"
             showBalance={false}
           />
         </div>

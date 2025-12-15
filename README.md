@@ -4,7 +4,7 @@
 
 A decentralized application for managing customs compliance records with end-to-end encryption using Fully Homomorphic Encryption (FHE). Built with FHEVM by Zama, this platform ensures sensitive compliance data remains private while maintaining transparency and auditability.
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-blue?style=for-the-badge)](https://secure-compliance-hub.vercel.app/)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-blue?style=for-the-badge)](https://secure-compliance.vercel.app/)
 [![License](https://img.shields.io/badge/License-BSD--3--Clause--Clear-green?style=for-the-badge)](LICENSE)
 
 ## 🎥 Demo Video

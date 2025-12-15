@@ -141,15 +141,19 @@ export const ComplianceForm = ({ onSubmit }: ComplianceFormProps) => {
   };
 
   return (
-    <Card className="border-border/50 shadow-lg">
-      <CardHeader className="bg-gradient-to-r from-primary/5 to-accent/5 border-b">
-        <div className="flex items-center gap-2">
-          <FileText className="w-5 h-5 text-primary" />
-          <CardTitle>New Compliance Record</CardTitle>
+    <Card className="border-border/30 shadow-card rounded-2xl overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 border-b border-border/30 pb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-soft">
+            <FileText className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <CardTitle className="text-lg">New Compliance Record</CardTitle>
+            <CardDescription className="text-sm mt-0.5">
+              Encrypted and stored securely on-chain
+            </CardDescription>
+          </div>
         </div>
-        <CardDescription>
-          All sensitive information will be encrypted and stored securely on-chain
-        </CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
         <form onSubmit={handleSubmit} className="space-y-6">

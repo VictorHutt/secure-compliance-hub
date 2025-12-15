@@ -1,94 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    /* 现代简洁风 - 浅灰背景 + 深绿主色 */
+    --background: 210 15% 97%;
+    --foreground: 210 20% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 210 20% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 210 20% 15%;
 
-    --primary: 200 95% 35%;
+    /* 主色 - 深绿色 */
+    --primary: 160 60% 35%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 195 85% 88%;
-    --secondary-foreground: 215 25% 15%;
+    --secondary: 160 20% 94%;
+    --secondary-foreground: 160 60% 25%;
 
-    --muted: 210 20% 94%;
-    --muted-foreground: 215 15% 45%;
+    --muted: 210 12% 93%;
+    --muted-foreground: 210 10% 45%;
 
-    --accent: 185 80% 45%;
+    /* 强调色 - 青绿 */
+    --accent: 170 55% 40%;
     --accent-foreground: 0 0% 100%;
 
-    --success: 145 65% 45%;
+    /* 状态色 */
+    --success: 145 60% 40%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 35 90% 55%;
-    --warning-foreground: 0 0% 100%;
+    --warning: 40 85% 50%;
+    --warning-foreground: 40 90% 15%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 20% 88%;
-    --input: 210 20% 90%;
-    --ring: 200 95% 35%;
+    --border: 210 15% 88%;
+    --input: 210 15% 90%;
+    --ring: 160 60% 35%;
 
     --radius: 0.75rem;
 
-    --encrypted: 280 60% 50%;
-    --encrypted-foreground: 0 0% 100%;
-
-    --gradient-primary: linear-gradient(135deg, hsl(200 95% 35%), hsl(185 80% 45%));
-    --gradient-secure: linear-gradient(135deg, hsl(200 95% 35%), hsl(280 60% 50%));
-    --shadow-glow: 0 0 30px hsla(200, 95%, 35%, 0.15);
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .dark {
-    --background: 215 30% 8%;
-    --foreground: 210 20% 95%;
-
-    --card: 215 28% 12%;
-    --card-foreground: 210 20% 95%;
-
-    --popover: 215 28% 12%;
-    --popover-foreground: 210 20% 95%;
-
-    --primary: 200 90% 45%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 215 25% 18%;
-    --secondary-foreground: 210 20% 95%;
-
-    --muted: 215 25% 18%;
-    --muted-foreground: 215 15% 65%;
-
-    --accent: 185 75% 50%;
-    --accent-foreground: 0 0% 100%;
-
-    --success: 145 60% 50%;
-    --success-foreground: 0 0% 100%;
-
-    --warning: 35 85% 60%;
-    --warning-foreground: 0 0% 100%;
-
-    --destructive: 0 80% 65%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 215 25% 20%;
-    --input: 215 25% 20%;
-    --ring: 200 90% 45%;
-
-    --encrypted: 280 55% 55%;
+    /* 加密字段色 */
+    --encrypted: 260 55% 50%;
     --encrypted-foreground: 0 0% 100%;
   }
 }
@@ -99,6 +58,104 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', sans-serif;
   }
+}
+
+/* 动画 */
+@keyframes fade-up {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.4s ease-out forwards;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, hsl(160 60% 35% / 0.1), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* 背景 */
+.bg-page {
+  background: linear-gradient(180deg, hsl(210 15% 97%), hsl(210 12% 95%));
+}
+
+/* 玻璃效果 */
+.glass-effect {
+  background: hsl(0 0% 100% / 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* 阴影 */
+.shadow-soft {
+  box-shadow: 0 2px 12px hsl(210 15% 70% / 0.12);
+}
+
+.shadow-card {
+  box-shadow: 0 4px 20px hsl(210 15% 60% / 0.1);
+}
+
+.shadow-hover {
+  box-shadow: 0 6px 25px hsl(160 60% 35% / 0.12);
+}
+
+/* 状态边框 */
+.border-status-low {
+  border-left: 3px solid hsl(145 60% 40%);
+}
+
+.border-status-medium {
+  border-left: 3px solid hsl(40 85% 50%);
+}
+
+.border-status-high {
+  border-left: 3px solid hsl(0 70% 55%);
+}
+
+.border-status-critical {
+  border-left: 3px solid hsl(260 55% 50%);
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
+}
+
+::selection {
+  background: hsl(var(--primary) / 0.15);
+  color: hsl(var(--primary));
 }

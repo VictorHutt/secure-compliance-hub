@@ -6,31 +6,31 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EncryptedField } from "./EncryptedField";
-import { Calendar, User, Hash, AlertTriangle, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+import { Calendar, User, Hash, AlertTriangle, ChevronDown, ChevronUp, ExternalLink, Shield } from "lucide-react";
 
 interface ComplianceRecordCardProps {
   record: ComplianceRecord;
 }
 
-const getRiskColor = (risk: string) => {
+const getRiskStyles = (risk: string) => {
   switch (risk) {
     case "low":
-      return "bg-success/10 text-success border-success/20";
+      return { badge: "bg-primary/10 text-primary border-primary/20", border: "border-l-primary" };
     case "medium":
-      return "bg-warning/10 text-warning border-warning/20";
+      return { badge: "bg-warning/10 text-warning border-warning/20", border: "border-l-warning" };
     case "high":
-      return "bg-destructive/10 text-destructive border-destructive/20";
+      return { badge: "bg-destructive/10 text-destructive border-destructive/20", border: "border-l-destructive" };
     case "critical":
-      return "bg-encrypted/10 text-encrypted border-encrypted/20";
+      return { badge: "bg-encrypted/10 text-encrypted border-encrypted/20", border: "border-l-encrypted" };
     default:
-      return "bg-muted text-muted-foreground";
+      return { badge: "bg-muted text-muted-foreground", border: "border-l-muted" };
   }
 };
 
 const getStatusColor = (status: string) => {
   switch (status) {
     case "approved":
-      return "bg-success/10 text-success border-success/20";
+      return "bg-primary/10 text-primary border-primary/20";
     case "pending":
       return "bg-warning/10 text-warning border-warning/20";
     case "flagged":
@@ -42,6 +42,7 @@ const getStatusColor = (status: string) => {
 
 export const ComplianceRecordCard = ({ record }: ComplianceRecordCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const riskStyles = getRiskStyles(record.riskLevel);
   
   const formatTimestamp = (dateString: string) => {
     const date = new Date(dateString);
@@ -54,23 +55,26 @@ export const ComplianceRecordCard = ({ record }: ComplianceRecordCardProps) => {
   const { date: formattedDate, time: formattedTime } = formatTimestamp(record.date);
 
   return (
-    <Card className="border-border/50 hover:border-primary/50 transition-all shadow-sm hover:shadow-md">
-      <CardHeader className="pb-3 border-b bg-gradient-to-r from-background to-muted/20">
+    <Card className={`border-border/30 shadow-card rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-hover border-l-4 ${riskStyles.border}`}>
+      <CardHeader className="pb-4 bg-gradient-to-r from-card via-card to-muted/10">
         <div className="flex items-start justify-between gap-4">
-          <div className="space-y-2 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Hash className="w-4 h-4 text-muted-foreground" />
+          <div className="space-y-3 flex-1">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Hash className="w-4 h-4 text-primary" />
+              </div>
               <span className="font-mono text-sm font-semibold text-foreground">
                 {record.id}
               </span>
               {record.onChainId !== undefined && (
-                <Badge variant="outline" className="text-xs">
-                  Chain ID: {record.onChainId}
+                <Badge variant="outline" className="text-xs bg-accent/10 text-accent border-accent/20">
+                  <Shield className="w-3 h-3 mr-1" />
+                  Chain #{record.onChainId}
                 </Badge>
               )}
             </div>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className={getRiskColor(record.riskLevel)}>
+              <Badge variant="outline" className={riskStyles.badge}>
                 <AlertTriangle className="w-3 h-3 mr-1" />
                 {record.riskLevel.toUpperCase()}
               </Badge>
@@ -79,46 +83,46 @@ export const ComplianceRecordCard = ({ record }: ComplianceRecordCardProps) => {
               </Badge>
             </div>
           </div>
-          <div className="text-right space-y-1">
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Calendar className="w-3 h-3" />
+          <div className="text-right space-y-2 bg-card/80 rounded-xl px-3 py-2 border border-border/30">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Calendar className="w-3.5 h-3.5 text-primary" />
               <div className="flex flex-col items-end">
-                <span>{formattedDate}</span>
-                <span className="text-[10px]">{formattedTime}</span>
+                <span className="font-medium">{formattedDate}</span>
+                <span className="text-[10px] text-muted-foreground/70">{formattedTime}</span>
               </div>
             </div>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <User className="w-3 h-3" />
-              {record.inspector}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <User className="w-3.5 h-3.5 text-primary" />
+              <span className="font-medium">{record.inspector}</span>
             </div>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="pt-6 space-y-4">
+      <CardContent className="pt-5 space-y-4">
         <div className="grid gap-4">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground mb-1">
+          <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
+            <p className="text-xs font-medium text-muted-foreground mb-1.5">
               Inspection ID
             </p>
-            <p className="text-sm font-mono bg-muted/50 px-3 py-2 rounded-md">
+            <p className="text-sm font-mono font-medium text-foreground">
               {record.inspectionId}
             </p>
           </div>
 
           {isExpanded && (
             <>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
+                  <p className="text-xs font-medium text-muted-foreground mb-1.5">
                     Risk Level
                   </p>
-                  <Badge variant="outline" className={getRiskColor(record.riskLevel)}>
+                  <Badge variant="outline" className={riskStyles.badge}>
                     {record.riskLevel.toUpperCase()}
                   </Badge>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">
+                <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
+                  <p className="text-xs font-medium text-muted-foreground mb-1.5">
                     Status
                   </p>
                   <Badge variant="outline" className={getStatusColor(record.status)}>
@@ -136,22 +140,22 @@ export const ComplianceRecordCard = ({ record }: ComplianceRecordCardProps) => {
             </>
           )}
 
-          <div className="flex items-center justify-between pt-2 border-t">
+          <div className="flex items-center justify-between pt-3 border-t border-border/30">
             <div className="flex items-center gap-2">
               <p className="text-xs text-muted-foreground">
-                Wallet: <span className="font-mono">{record.walletAddress.slice(0, 6)}...{record.walletAddress.slice(-4)}</span>
+                Wallet: <span className="font-mono font-medium">{record.walletAddress.slice(0, 6)}...{record.walletAddress.slice(-4)}</span>
               </p>
               {record.walletAddress && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-5 w-5 p-0"
+                  className="h-6 w-6 p-0 rounded-lg hover:bg-primary/10"
                   onClick={() => {
                     navigator.clipboard.writeText(record.walletAddress);
                   }}
                   title="Copy wallet address"
                 >
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="w-3 h-3 text-primary" />
                 </Button>
               )}
             </div>
@@ -159,16 +163,16 @@ export const ComplianceRecordCard = ({ record }: ComplianceRecordCardProps) => {
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="h-7 text-xs"
+              className="h-8 text-xs rounded-lg hover:bg-primary/10 text-primary"
             >
               {isExpanded ? (
                 <>
-                  <ChevronUp className="w-3 h-3 mr-1" />
+                  <ChevronUp className="w-3.5 h-3.5 mr-1" />
                   Show Less
                 </>
               ) : (
                 <>
-                  <ChevronDown className="w-3 h-3 mr-1" />
+                  <ChevronDown className="w-3.5 h-3.5 mr-1" />
                   Show More
                 </>
               )}
